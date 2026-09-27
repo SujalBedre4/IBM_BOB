@@ -1,6 +1,6 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { app } from '../../src/index';
+import { app } from '../src/index';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 

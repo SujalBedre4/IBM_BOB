@@ -1,6 +1,6 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { app } from '../../src/index';
+import { app } from '../src/index';
 
 const TEST_SECRET = 'test-secret-32-chars-minimum-len!';
 

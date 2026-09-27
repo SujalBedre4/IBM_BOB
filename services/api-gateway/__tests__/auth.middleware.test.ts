@@ -1,6 +1,6 @@
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
-import { app } from '../../src/index';
+import { app } from '../src/index';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 
@@ -96,7 +96,7 @@ describe('requireRole middleware', () => {
 
   it('returns 401 when req.user is not set (requireRole called without validateJWT)', async () => {
     // Accessing requireRole result directly via import
-    const { requireRole } = await import('../../src/middleware/auth');
+    const { requireRole } = await import('../src/middleware/auth');
     const mockReq: any = {}; // no .user
     const mockRes: any = {
       status: jest.fn().mockReturnThis(),
