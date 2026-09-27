@@ -24,7 +24,7 @@
   "findings_summary": {
     "critical": 0,
     "high": 0,
-    "medium": 6,
+    "medium": 5,
     "low": 3,
     "infra_violations": 2,
     "uncovered_high_risk_symbols": 0,
@@ -48,12 +48,6 @@
       "severity": "medium",
       "file": "services/worker-service/src/main.py",
       "message": "Predictable 16-bit job IDs — use uuid4 or secrets.token_hex"
-    },
-    {
-      "id": "CVE-2024-3772",
-      "severity": "medium",
-      "file": "services/worker-service/requirements.txt",
-      "message": "pydantic==2.5.3 EmailStr ReDoS — upgrade to >=2.7.0"
     },
     {
       "id": "INFRA-006",
@@ -90,5 +84,5 @@
     },
     "ci_gate_behavior": "Job runs after all other CI jobs; blocks docker push and helm upgrade on exit code 1; uploads all 7 report+artifact files as a GitHub Actions artifact; posts a verdict comment on every PR."
   },
-  "release_engineer_notes": "Release v1.4.2 is CLEARED. All 13 hard blockers (1 critical security + 7 high security + 5 high infra) resolved in this pass. 6 medium findings tracked as follow-on work items — none are release blockers. No schema migrations present; rollback complexity LOW."
+  "release_engineer_notes": "Release v1.4.2 is CLEARED. All 13 hard blockers (1 critical + 7 high security + 5 high infra) resolved. Additionally resolved in dependency pass: 7 starlette CVEs (fastapi 0.133.1 + starlette 1.7.0), pydantic CVE-2024-3772 (upgraded to 2.7.4), pytest PYSEC-2026-1845 (upgraded to 9.0.3), duplicate httpx entry removed. 5 medium findings remain as tracked follow-on work items. No schema migrations; rollback complexity LOW."
 }
