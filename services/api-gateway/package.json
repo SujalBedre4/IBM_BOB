@@ -36,6 +36,9 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "setupFiles": [
+      "./jest.setup.env.js"
+    ],
     "coverageDirectory": "coverage",
     "collectCoverageFrom": [
       "src/**/*.ts"

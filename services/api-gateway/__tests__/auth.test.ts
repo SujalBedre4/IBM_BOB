@@ -2,11 +2,7 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../src/index';
 
-const TEST_SECRET = 'test-secret-32-chars-minimum-len!';
-
-beforeAll(() => {
-  process.env.JWT_SECRET = TEST_SECRET;
-});
+const TEST_SECRET = process.env.JWT_SECRET || 'test-secret-for-jest';
 
 function makeToken(
   payload: object,
