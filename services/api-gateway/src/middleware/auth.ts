@@ -30,7 +30,7 @@ export function validateJWT(req: Request, res: Response, next: NextFunction): vo
   const token = authHeader.slice(7);
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET!) as JWTPayload;
+    const payload = jwt.verify(token, JWT_SECRET!, { algorithms: ['HS256'] }) as JWTPayload;
     (req as any).user = payload;
     next();
   } catch (err) {

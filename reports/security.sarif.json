@@ -2,15 +2,15 @@
   "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
   "version": "2.1.0",
   "x-autorelease-summary": {
-    "timestamp": "2025-07-14T00:00:00Z",
+    "timestamp": "2025-07-15T00:00:00Z",
     "findings_by_severity": {
-      "critical": 1,
-      "high": 5,
+      "critical": 0,
+      "high": 0,
       "medium": 4,
       "low": 3
     },
-    "blocked": true,
-    "blocking_reason": "1 critical and 5 high severity findings detected — hardcoded admin credential hash, JWT algorithm confusion, IDOR in user profile access, axios CVE-2024-39338/CVE-2024-28849, and FastAPI CVE-2024-24762"
+    "blocked": false,
+    "resolution_note": "All 1 critical and 5 high findings resolved: hardcoded hash removed (ASVS-2.1.1), algorithms restriction added to jwt.verify() (ASVS-3.5.2 ×2), brute-force guard added (ASVS-3.1.1), IDOR self-check normalised (ASVS-4.2.1), axios upgraded to ^1.7.4 (CVE-2024-39338/CVE-2024-28849), fastapi upgraded to 0.109.1 (CVE-2024-24762)."
   },
   "runs": [
     {

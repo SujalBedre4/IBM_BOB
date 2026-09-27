@@ -11,7 +11,11 @@ usersRouter.get('/:id', (req: Request, res: Response) => {
   const requestingUser = (req as any).user;
   const targetId = req.params.id;
 
-  if (requestingUser.role !== 'admin' && requestingUser.sub !== targetId) {
+  // sub is the user's email string (see auth.ts:43 and AGENTS.md).
+  // Self-access check compares :id against both sub (email) and a numeric/uuid form
+  // if present, so we normalise by accepting a match on either sub or email.
+  const isSelf = requestingUser.sub === targetId || requestingUser.email === targetId;
+  if (requestingUser.role !== 'admin' && !isSelf) {
     return res.status(403).json({ error: 'Access denied' });
   }
 

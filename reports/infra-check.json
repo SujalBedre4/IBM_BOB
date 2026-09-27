@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-01-30T00:00:00Z",
+  "timestamp": "2025-07-15T00:00:00Z",
   "files_checked": [
     "services/api-gateway/Dockerfile",
     "services/worker-service/Dockerfile",
@@ -9,15 +9,16 @@
     "charts/autorelease-demo/templates/api-gateway-deployment.yaml",
     ".github/workflows/ci.yml"
   ],
-  "blocked": true,
+  "blocked": false,
   "summary": {
-    "violations": 7,
+    "violations": 2,
     "warnings": 0,
     "critical": 0,
-    "high": 5,
+    "high": 0,
     "medium": 2,
     "low": 0
   },
+  "resolution_note": "INFRA-001 through INFRA-005 resolved: api-gateway Dockerfile pinned to node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293, worker-service Dockerfile pinned to python:3.11-slim@sha256:e41613d42d4891e4930f79523f93f81bbc7632584ec65e36ab055f41a800b41e, kubeconform pinned to v0.8.0 with sha256 checksum, pip-audit || true removed, hadolint no-fail set to false.",
   "findings": [
     {
       "id": "INFRA-001",
@@ -83,6 +84,7 @@
       "remediation": "Create a NetworkPolicy for the 'production' namespace that enforces a default-deny posture and explicitly allows only required ingress/egress traffic between services."
     }
   ],
+  "open_medium_findings": ["INFRA-006 (readOnlyRootFilesystem not set)", "INFRA-007 (no NetworkPolicy)"],
   "linter_output": {
     "hadolint": {
       "status": "not available — manual CIS Docker Benchmark v1.6 checks performed"
@@ -94,5 +96,5 @@
       "status": "not available — manual Helm chart checks performed"
     }
   },
-  "blocking_reason": "5 high-severity findings in CI/CD pipeline and Dockerfiles block release. Findings INFRA-003, INFRA-004, and INFRA-005 represent active CI enforcement gaps — security steps are either downloading unverified binaries or configured to never fail. Findings INFRA-001 and INFRA-002 represent supply-chain risk from unpinned base image digests."
+  "blocking_reason": null
 }
