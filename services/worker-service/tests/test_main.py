@@ -29,8 +29,11 @@ class TestSanitizeFilename:
         assert ".." not in result
 
     def test_path_traversal_windows_style(self):
-        result = sanitize_filename("..\\..\\windows\\system32\\calc.exe")
-        assert "/" not in result
+        # On Linux, os.path.basename does not parse backslashes as separators,
+        # so the whole string survives; after re.sub the leading '..' becomes
+        # a leading '.', which the hidden-file/traversal guard correctly rejects.
+        with pytest.raises(ValueError, match="Invalid filename"):
+            sanitize_filename("..\\..\\windows\\system32\\calc.exe")
 
     def test_leading_dot_raises(self):
         with pytest.raises(ValueError, match="Invalid filename"):
