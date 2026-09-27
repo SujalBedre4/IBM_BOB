@@ -48,7 +48,7 @@ jobs:
         working-directory: services/worker-service
         run: |
           pip install -r requirements.txt
-          pytest tests/ -v --tb=short
+          PYTHONPATH=. pytest tests/ -v --tb=short
 
   docker-lint:
     name: Dockerfile Lint
@@ -69,10 +69,16 @@ jobs:
           format: sarif
           output-file: reports/hadolint-worker.sarif
           no-fail: true
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload SARIF (api-gateway)
+        uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: reports/
+          sarif_file: reports/hadolint-api.sarif
+          category: dockerfile-lint-api-gateway
+      - name: Upload SARIF (worker-service)
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: reports/hadolint-worker.sarif
+          category: dockerfile-lint-worker-service
 
   dependency-audit:
     name: Dependency Vulnerability Audit
@@ -101,13 +107,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install kubeval
+      - name: Install kubeconform
         run: |
-          wget -q https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
-          tar xf kubeval-linux-amd64.tar.gz
-          sudo mv kubeval /usr/local/bin/
+          wget -q https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz
+          tar xf kubeconform-linux-amd64.tar.gz
+          sudo mv kubeconform /usr/local/bin/
       - name: Validate K8s manifests
-        run: kubeval --strict k8s/*.yaml
+        run: kubeconform -strict -summary k8s/*.yaml
 
   bob-shell-preflight:
     name: Bob Shell — Non-Interactive Release Pre-Flight
