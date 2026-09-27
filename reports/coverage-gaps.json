@@ -1,0 +1,87 @@
+{
+  "timestamp": "2025-07-14T00:00:00Z",
+  "summary": {
+    "gaps_found": 11,
+    "tests_generated": 2,
+    "uncovered_high_risk": 6
+  },
+  "gaps": [
+    {
+      "symbol": "validateJWT",
+      "file": "services/api-gateway/src/middleware/auth.ts",
+      "risk": "high",
+      "reason": "JWT validation middleware is security-critical; zero tests covered missing header, malformed header, expired token, invalid token, or success path",
+      "test_file_generated": "services/api-gateway/__tests__/auth.test.ts"
+    },
+    {
+      "symbol": "requireRole",
+      "file": "services/api-gateway/src/middleware/auth.ts",
+      "risk": "high",
+      "reason": "Role-based access control middleware had no tests for wrong role → 403, correct role → pass, or admin bypass",
+      "test_file_generated": "services/api-gateway/__tests__/auth.test.ts"
+    },
+    {
+      "symbol": "POST /auth/login",
+      "file": "services/api-gateway/src/routes/auth.ts",
+      "risk": "high",
+      "reason": "Login endpoint had no tests: missing fields, unknown user, wrong password paths all uncovered",
+      "test_file_generated": "services/api-gateway/__tests__/auth.test.ts"
+    },
+    {
+      "symbol": "POST /auth/refresh",
+      "file": "services/api-gateway/src/routes/auth.ts",
+      "risk": "high",
+      "reason": "Token refresh endpoint had no tests: missing token, invalid token, and valid refresh all uncovered",
+      "test_file_generated": "services/api-gateway/__tests__/auth.test.ts"
+    },
+    {
+      "symbol": "GET /users/:id",
+      "file": "services/api-gateway/src/routes/users.ts",
+      "risk": "high",
+      "reason": "IDOR-sensitive ownership check (sub vs id) had no tests; non-admin cross-user access, self-access, and admin bypass all uncovered",
+      "test_file_generated": "services/api-gateway/__tests__/auth.test.ts"
+    },
+    {
+      "symbol": "DELETE /users/:id",
+      "file": "services/api-gateway/src/routes/users.ts",
+      "risk": "high",
+      "reason": "Admin-only delete route had no tests for non-admin rejection or admin success path",
+      "test_file_generated": "services/api-gateway/__tests__/auth.test.ts"
+    },
+    {
+      "symbol": "sanitize_filename (edge cases)",
+      "file": "services/worker-service/src/main.py",
+      "risk": "high",
+      "reason": "Path traversal (../../etc/passwd), leading dot, and empty string cases were uncovered; only basic happy path existed",
+      "test_file_generated": "services/worker-service/tests/test_main.py"
+    },
+    {
+      "symbol": "calculate_priority_score",
+      "file": "services/worker-service/src/main.py",
+      "risk": "medium",
+      "reason": "Score calculation had zero test coverage; boundary conditions (urgency out of range, negative size, 100.0 cap, vip bonus) all uncovered",
+      "test_file_generated": "services/worker-service/tests/test_main.py"
+    },
+    {
+      "symbol": "POST /jobs",
+      "file": "services/worker-service/src/main.py",
+      "risk": "high",
+      "reason": "API key auth and Pydantic validation on the enqueue endpoint had zero test coverage",
+      "test_file_generated": "services/worker-service/tests/test_main.py"
+    },
+    {
+      "symbol": "health_check (worker-service)",
+      "file": "services/worker-service/src/main.py",
+      "risk": "low",
+      "reason": "GET /health endpoint has no test (low risk, trivial endpoint)",
+      "test_file_generated": null
+    },
+    {
+      "symbol": "GET /health (api-gateway error branch)",
+      "file": "services/api-gateway/src/index.ts",
+      "risk": "low",
+      "reason": "404 and global error handler branches have no test coverage",
+      "test_file_generated": null
+    }
+  ]
+}

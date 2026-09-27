@@ -1,0 +1,9 @@
+apiVersion: v2
+name: autorelease-demo
+description: AutoRelease Guard demo Helm chart
+type: application
+version: 1.4.2
+appVersion: "1.4.2"
+maintainers:
+  - name: platform-eng
+    email: platform@example.com

@@ -1,0 +1,57 @@
+# Default values for autorelease-demo.
+# Override these per environment via -f values-prod.yaml
+
+global:
+  imageRegistry: "ghcr.io/org"
+  imagePullSecrets: []
+
+apiGateway:
+  image:
+    repository: api-gateway
+    tag: "1.4.2"   # Intentionally versioned — never use "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 3
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+workerService:
+  image:
+    repository: worker-service
+    tag: "1.4.2"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "1000m"
+      memory: "512Mi"
+
+metricsExporter:
+  image:
+    repository: metrics-exporter
+    tag: "1.4.2"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "32Mi"
+    limits:
+      cpu: "100m"
+      memory: "64Mi"

@@ -1,0 +1,39 @@
+# AutoRelease Guard — Workspace Rules
+# These rules are enforced by all agents and modes in this workspace.
+
+## Commit Format
+- All commits MUST follow Conventional Commits spec: https://www.conventionalcommits.org
+- Allowed types: feat, fix, chore, ci, docs, refactor, test, perf, build
+- Breaking changes require BREAKING CHANGE footer or ! suffix (e.g. feat!:)
+- Scope is required for services: feat(api-gateway): ..., fix(worker-service): ...
+
+## Security Output
+- All vulnerability findings MUST be emitted as SARIF 2.1.0 JSON
+- SARIF output location: reports/security.sarif.json
+- Every finding must include: ruleId, level (error/warning/note), message, location (file + line)
+- Critical and High findings MUST block the release (no sign-off until resolved or risk-accepted)
+
+## Infrastructure Rules
+- No hardcoded secrets, tokens, or credentials in any file (Dockerfile, YAML, .env committed)
+- No `privileged: true` in any Kubernetes pod spec
+- All containers must have CPU and memory resource limits defined
+- All images must be pinned to a digest or specific version tag (no :latest)
+- All K8s workloads must have readinessProbe and livenessProbe defined
+- Helm charts must use templated image tags, never hardcoded
+
+## Rollback Requirements
+- Every release MUST produce ROLLBACK_RUNBOOK.md in artifacts/
+- Rollback runbook must include: pre-rollback checklist, rollback commands, smoke test, escalation path
+- Rollback commands must be tested in dry-run mode before being written to the runbook
+
+## Release Artifacts
+- RELEASE_NOTES.md must follow Keep a Changelog format
+- DEPLOY_CHECKLIST.md must be signed off (all items checked) before deploy window opens
+- release-readiness.json must aggregate findings from all subagents with a final go/no-go verdict
+
+## Agent Behavior
+- Subagents must write their output reports before signaling completion
+- The orchestrator (release-planner) must not sign off if any subagent reports CRITICAL findings
+- All file paths are relative to the workspace root
+- Agents must not modify source files during validation runs — read-only analysis only
+- Test synthesizer is the ONLY agent permitted to create new source files (test files only)

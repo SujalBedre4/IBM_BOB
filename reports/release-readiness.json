@@ -1,0 +1,149 @@
+{
+  "verdict": "NO-GO",
+  "timestamp": "2025-07-15T00:00:00Z",
+  "commit_sha": "N/A — workspace has no git history",
+  "branch": "current working tree (no git repository)",
+  "version": "1.4.2",
+  "pipeline_run": {
+    "sec_auditor": {
+      "report": "reports/security.sarif.json",
+      "blocked": true,
+      "blocking_reason": "1 critical and 5 high severity findings: hardcoded admin credential hash, JWT algorithm confusion (×2), IDOR on user profile route, missing rate limiting on login, axios CVE-2024-39338 + CVE-2024-28849, fastapi CVE-2024-24762"
+    },
+    "infra_validator": {
+      "report": "reports/infra-check.json",
+      "blocked": true,
+      "blocking_reason": "5 high severity findings: unpinned Docker base image digests (×2), unverified kubeval binary download in CI, pip-audit suppressed with || true, hadolint configured with no-fail: true"
+    },
+    "test_synthesizer": {
+      "report": "reports/coverage-gaps.json",
+      "blocked": false,
+      "advisory": "6 high-risk symbols had zero coverage; 2 test files synthesized (services/api-gateway/__tests__/auth.test.ts, services/worker-service/tests/test_main.py). CI execution required to confirm tests pass."
+    }
+  },
+  "findings_summary": {
+    "critical": 1,
+    "high": 12,
+    "medium": 6,
+    "low": 3,
+    "infra_violations": 7,
+    "uncovered_high_risk_symbols": 6,
+    "tests_generated": 2
+  },
+  "blockers": [
+    {
+      "id": "ASVS-2.1.1",
+      "severity": "critical",
+      "file": "services/api-gateway/src/routes/auth.ts",
+      "line": 14,
+      "message": "Hardcoded bcrypt password hash for admin@example.com in MOCK_USERS"
+    },
+    {
+      "id": "ASVS-3.5.2",
+      "severity": "high",
+      "file": "services/api-gateway/src/middleware/auth.ts",
+      "line": 33,
+      "message": "jwt.verify() without algorithms restriction — algorithm confusion attack vector"
+    },
+    {
+      "id": "ASVS-3.5.2",
+      "severity": "high",
+      "file": "services/api-gateway/src/routes/auth.ts",
+      "line": 62,
+      "message": "jwt.verify() without algorithms restriction on /auth/refresh endpoint"
+    },
+    {
+      "id": "ASVS-4.2.1",
+      "severity": "high",
+      "file": "services/api-gateway/src/routes/users.ts",
+      "line": 14,
+      "message": "IDOR: sub (email string) compared against :id (likely UUID/numeric) — ownership check may never match"
+    },
+    {
+      "id": "ASVS-3.1.1",
+      "severity": "high",
+      "file": "services/api-gateway/src/routes/auth.ts",
+      "line": 23,
+      "message": "POST /auth/login has no rate limiting — brute-force vector"
+    },
+    {
+      "id": "CVE-2024-39338",
+      "severity": "high",
+      "file": "services/api-gateway/package.json",
+      "line": 18,
+      "message": "axios ^1.6.2 vulnerable to SSRF — upgrade to >=1.7.4"
+    },
+    {
+      "id": "CVE-2024-28849",
+      "severity": "high",
+      "file": "services/api-gateway/package.json",
+      "line": 18,
+      "message": "axios ^1.6.2 vulnerable to credential leak on redirect — upgrade to >=1.7.4"
+    },
+    {
+      "id": "CVE-2024-24762",
+      "severity": "high",
+      "file": "services/worker-service/requirements.txt",
+      "line": 1,
+      "message": "fastapi==0.109.0 ReDoS via python-multipart — upgrade to >=0.109.1"
+    },
+    {
+      "id": "INFRA-001",
+      "severity": "high",
+      "file": "services/api-gateway/Dockerfile",
+      "line": 1,
+      "message": "Base image node:20-alpine not pinned to SHA digest"
+    },
+    {
+      "id": "INFRA-002",
+      "severity": "high",
+      "file": "services/worker-service/Dockerfile",
+      "line": 1,
+      "message": "Base image python:3.11-slim not pinned to SHA digest"
+    },
+    {
+      "id": "INFRA-003",
+      "severity": "high",
+      "file": ".github/workflows/ci.yml",
+      "line": 106,
+      "message": "kubeval downloaded at latest from internet with no checksum — supply-chain risk"
+    },
+    {
+      "id": "INFRA-004",
+      "severity": "high",
+      "file": ".github/workflows/ci.yml",
+      "line": 96,
+      "message": "pip-audit ends with || true — CVE failures never block CI"
+    },
+    {
+      "id": "INFRA-005",
+      "severity": "high",
+      "file": ".github/workflows/ci.yml",
+      "line": 64,
+      "message": "hadolint no-fail: true — Dockerfile lint violations never block CI"
+    }
+  ],
+  "artifacts": [
+    "artifacts/RELEASE_NOTES.md",
+    "artifacts/ROLLBACK_RUNBOOK.md",
+    "artifacts/DEPLOY_CHECKLIST.md"
+  ],
+  "generated_tests": [
+    "services/api-gateway/__tests__/auth.test.ts",
+    "services/worker-service/tests/test_main.py"
+  ],
+  "bob_shell_automation": {
+    "preflight_script": "scripts/bob-preflight.sh",
+    "ci_simulator": "scripts/run-release-preflight.sh",
+    "ci_workflow_job": ".github/workflows/ci.yml#bob-shell-preflight",
+    "invocation": "bob --non-interactive \"run release pre-flight for v1.4.2 against main\"",
+    "exit_codes": {
+      "0": "GO — cleared for deployment",
+      "1": "NO-GO — blockers found",
+      "2": "Prerequisites not met",
+      "3": "Pipeline execution error"
+    },
+    "ci_gate_behavior": "Job runs after all other CI jobs; blocks docker push and helm upgrade on exit code 1; uploads all 7 report+artifact files as a GitHub Actions artifact; posts a verdict comment on every PR."
+  },
+  "release_engineer_notes": "Release v1.4.2 is BLOCKED. 13 hard blockers (1 critical security + 7 high security + 5 high infra) must be resolved and a clean re-scan produced before sign-off is permitted. No schema migrations are present; rollback complexity is LOW. Medium and low findings should be tracked as follow-on work items."
+}

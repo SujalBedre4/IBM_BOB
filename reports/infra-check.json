@@ -1,0 +1,98 @@
+{
+  "timestamp": "2025-01-30T00:00:00Z",
+  "files_checked": [
+    "services/api-gateway/Dockerfile",
+    "services/worker-service/Dockerfile",
+    "k8s/api-gateway-deployment.yaml",
+    "k8s/worker-service-deployment.yaml",
+    "charts/autorelease-demo/values.yaml",
+    "charts/autorelease-demo/templates/api-gateway-deployment.yaml",
+    ".github/workflows/ci.yml"
+  ],
+  "blocked": true,
+  "summary": {
+    "violations": 7,
+    "warnings": 0,
+    "critical": 0,
+    "high": 5,
+    "medium": 2,
+    "low": 0
+  },
+  "findings": [
+    {
+      "id": "INFRA-001",
+      "severity": "high",
+      "file": "services/api-gateway/Dockerfile",
+      "line": 1,
+      "rule": "CIS-4.9 — Image not pinned to digest",
+      "message": "Base image 'node:20-alpine' uses a mutable version tag without a SHA digest. The tag can be silently re-pointed to a different image layer.",
+      "remediation": "Pin to a full digest, e.g. FROM node:20-alpine@sha256:<digest>. Retrieve the current digest with: docker inspect --format='{{index .RepoDigests 0}}' node:20-alpine"
+    },
+    {
+      "id": "INFRA-002",
+      "severity": "high",
+      "file": "services/worker-service/Dockerfile",
+      "line": 1,
+      "rule": "CIS-4.9 — Image not pinned to digest",
+      "message": "Base image 'python:3.11-slim' uses a mutable version tag without a SHA digest. The tag can be silently re-pointed to a different image layer.",
+      "remediation": "Pin to a full digest, e.g. FROM python:3.11-slim@sha256:<digest>. Retrieve the current digest with: docker inspect --format='{{index .RepoDigests 0}}' python:3.11-slim"
+    },
+    {
+      "id": "INFRA-003",
+      "severity": "high",
+      "file": ".github/workflows/ci.yml",
+      "line": 106,
+      "rule": "CICD-003 — Unverified binary download from internet",
+      "message": "The k8s-validate job downloads 'kubeval' from 'github.com/instrumenta/kubeval/releases/latest/download' at runtime with no checksum verification. Downloading and executing an unverified binary is a supply-chain risk.",
+      "remediation": "Pin the kubeval version (e.g. v0.16.1) and verify the download checksum before executing. Alternatively, use a pinned container action such as 'instrumenta/kubeval' from the GitHub Actions Marketplace."
+    },
+    {
+      "id": "INFRA-004",
+      "severity": "high",
+      "file": ".github/workflows/ci.yml",
+      "line": 96,
+      "rule": "CICD-006 — Security step failure suppressed",
+      "message": "The 'pip-audit' command ends with '|| true', meaning dependency vulnerabilities will never block the CI pipeline. This defeats the purpose of the audit step.",
+      "remediation": "Remove '|| true' from the pip-audit command. If known vulnerabilities need to be ignored, use pip-audit's '--ignore-vuln' flag with explicit CVE IDs instead of blanket failure suppression."
+    },
+    {
+      "id": "INFRA-005",
+      "severity": "high",
+      "file": ".github/workflows/ci.yml",
+      "line": 64,
+      "rule": "CICD-006 — Dockerfile lint failure suppressed",
+      "message": "Both hadolint-action steps set 'no-fail: true', which means Dockerfile lint violations (including critical security rules) never block the pull request. This nullifies the linting enforcement.",
+      "remediation": "Set 'no-fail: false' on both hadolint-action steps (lines 64 and 71). If there are known acceptable violations, use a .hadolint.yaml ignore list rather than disabling failures globally."
+    },
+    {
+      "id": "INFRA-006",
+      "severity": "medium",
+      "file": "k8s/worker-service-deployment.yaml",
+      "line": 57,
+      "rule": "K8S-SEC-004 — readOnlyRootFilesystem not set",
+      "message": "The worker-service container securityContext does not set 'readOnlyRootFilesystem: true'. Without this, a compromised container can write to the filesystem and persist malicious files.",
+      "remediation": "Add 'readOnlyRootFilesystem: true' to the container securityContext. Mount writable emptyDir volumes for any paths the application needs to write to (e.g. /tmp)."
+    },
+    {
+      "id": "INFRA-007",
+      "severity": "medium",
+      "file": "k8s/worker-service-deployment.yaml",
+      "line": 1,
+      "rule": "K8S-NET-001 — No NetworkPolicy defined for namespace",
+      "message": "No NetworkPolicy manifest was found for the 'production' namespace. Without a NetworkPolicy, all pods can communicate with each other and external endpoints by default (allow-all ingress/egress).",
+      "remediation": "Create a NetworkPolicy for the 'production' namespace that enforces a default-deny posture and explicitly allows only required ingress/egress traffic between services."
+    }
+  ],
+  "linter_output": {
+    "hadolint": {
+      "status": "not available — manual CIS Docker Benchmark v1.6 checks performed"
+    },
+    "kubeval": {
+      "status": "not available — manual Kubernetes security checks performed"
+    },
+    "helm_lint": {
+      "status": "not available — manual Helm chart checks performed"
+    }
+  },
+  "blocking_reason": "5 high-severity findings in CI/CD pipeline and Dockerfiles block release. Findings INFRA-003, INFRA-004, and INFRA-005 represent active CI enforcement gaps — security steps are either downloading unverified binaries or configured to never fail. Findings INFRA-001 and INFRA-002 represent supply-chain risk from unpinned base image digests."
+}

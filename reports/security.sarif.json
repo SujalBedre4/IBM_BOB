@@ -1,0 +1,331 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "x-autorelease-summary": {
+    "timestamp": "2025-07-14T00:00:00Z",
+    "findings_by_severity": {
+      "critical": 1,
+      "high": 5,
+      "medium": 4,
+      "low": 3
+    },
+    "blocked": true,
+    "blocking_reason": "1 critical and 5 high severity findings detected — hardcoded admin credential hash, JWT algorithm confusion, IDOR in user profile access, axios CVE-2024-39338/CVE-2024-28849, and FastAPI CVE-2024-24762"
+  },
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "AutoRelease Guard SecAuditor",
+          "version": "1.0.0",
+          "informationUri": "https://github.com/example/autorelease-guard",
+          "rules": [
+            {
+              "id": "ASVS-2.1.1",
+              "name": "HardcodedCredential",
+              "shortDescription": { "text": "Hardcoded password hash or secret in source code" },
+              "helpUri": "https://owasp.org/www-project-application-security-verification-standard/"
+            },
+            {
+              "id": "ASVS-3.1.1",
+              "name": "MissingRateLimiting",
+              "shortDescription": { "text": "Authentication endpoint lacks rate limiting / brute-force protection" },
+              "helpUri": "https://owasp.org/www-project-application-security-verification-standard/"
+            },
+            {
+              "id": "ASVS-3.5.2",
+              "name": "JWTAlgorithmConfusion",
+              "shortDescription": { "text": "JWT verification does not restrict accepted algorithms" },
+              "helpUri": "https://owasp.org/www-project-application-security-verification-standard/"
+            },
+            {
+              "id": "ASVS-4.2.1",
+              "name": "InsecureDirectObjectReference",
+              "shortDescription": { "text": "IDOR — resource ownership check may fail due to type mismatch" },
+              "helpUri": "https://owasp.org/www-project-application-security-verification-standard/"
+            },
+            {
+              "id": "ASVS-7.1.1",
+              "name": "TimingAttackOnSecretComparison",
+              "shortDescription": { "text": "Secret compared with non-constant-time equality operator" },
+              "helpUri": "https://owasp.org/www-project-application-security-verification-standard/"
+            },
+            {
+              "id": "ASVS-8.3.1",
+              "name": "PredictableResourceIdentifier",
+              "shortDescription": { "text": "Job IDs use non-cryptographic hash with low entropy" },
+              "helpUri": "https://owasp.org/www-project-application-security-verification-standard/"
+            },
+            {
+              "id": "ASVS-13.2.1",
+              "name": "MissingInputValidation",
+              "shortDescription": { "text": "API endpoint missing input length/format validation" },
+              "helpUri": "https://owasp.org/www-project-application-security-verification-standard/"
+            },
+            {
+              "id": "CVE-2024-39338",
+              "name": "AxiosSSRF",
+              "shortDescription": { "text": "axios <1.7.4 SSRF via proxy option" },
+              "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2024-39338"
+            },
+            {
+              "id": "CVE-2024-28849",
+              "name": "AxiosCredentialLeak",
+              "shortDescription": { "text": "axios <1.6.8 credential leakage on cross-origin redirect" },
+              "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2024-28849"
+            },
+            {
+              "id": "CVE-2024-24762",
+              "name": "FastAPIReDoS",
+              "shortDescription": { "text": "fastapi <0.109.1 ReDoS via python-multipart form parser" },
+              "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2024-24762"
+            },
+            {
+              "id": "CVE-2024-3772",
+              "name": "PydanticEmailReDoS",
+              "shortDescription": { "text": "pydantic <2.7.0 ReDoS in email validator" },
+              "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2024-3772"
+            },
+            {
+              "id": "DEP-ADVISORY-002",
+              "name": "UnmaintainedDependency",
+              "shortDescription": { "text": "bcryptjs is unmaintained (last release 2017)" }
+            },
+            {
+              "id": "DEP-ADVISORY-004",
+              "name": "DuplicateDependencyEntry",
+              "shortDescription": { "text": "httpx listed twice in requirements.txt" }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "ASVS-2.1.1",
+          "level": "error",
+          "message": {
+            "text": "CRITICAL: Hardcoded bcrypt password hash for 'admin@example.com' in MOCK_USERS. Any password matching this hash gains admin privileges. Remove this in-code credential store and load user records from a secrets-managed data source. Even in demo/test code, hardcoded admin hashes must not reach a deployed environment."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/src/routes/auth.ts" },
+                "region": { "startLine": 14 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ASVS-3.5.2",
+          "level": "error",
+          "message": {
+            "text": "HIGH: jwt.verify() called without an 'algorithms' restriction in validateJWT middleware. Without { algorithms: ['HS256'] }, the library accepts whatever algorithm the token header claims, enabling algorithm-confusion attacks (e.g., 'none' algorithm or RS256→HS256 confusion). Fix: jwt.verify(token, JWT_SECRET!, { algorithms: ['HS256'] })"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/src/middleware/auth.ts" },
+                "region": { "startLine": 33 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ASVS-3.5.2",
+          "level": "error",
+          "message": {
+            "text": "HIGH: jwt.verify() on the /auth/refresh endpoint also lacks an 'algorithms' restriction. Same algorithm-confusion risk as the validateJWT middleware. Fix: pass { algorithms: ['HS256'] } as options to jwt.verify()."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/src/routes/auth.ts" },
+                "region": { "startLine": 62 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ASVS-4.2.1",
+          "level": "error",
+          "message": {
+            "text": "HIGH: IDOR risk in GET /users/:id. The ownership check compares requestingUser.sub (set to the user's email string in auth.ts:43) against req.params.id (which is likely a numeric or UUID user ID). This comparison will always be false for non-admin users when ID formats differ, either silently denying all access or leaking profiles if the formats accidentally align. Ensure the data type and namespace of sub and the route parameter are consistent."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/src/routes/users.ts" },
+                "region": { "startLine": 14 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ASVS-3.1.1",
+          "level": "error",
+          "message": {
+            "text": "HIGH: POST /auth/login has no rate limiting or brute-force protection. An unauthenticated attacker can make unlimited login attempts at full server throughput. Add express-rate-limit (e.g., max 10 requests per 15 minutes per IP) to this router before the handler."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/src/routes/auth.ts" },
+                "region": { "startLine": 23 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-39338",
+          "level": "error",
+          "message": {
+            "text": "HIGH: axios ^1.6.2 may resolve to a version below 1.7.4, which is vulnerable to CVE-2024-39338 (SSRF via unsanitised proxy configuration). An attacker who can influence request parameters could cause the server to send requests to internal services. Upgrade axios to >=1.7.4."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/package.json" },
+                "region": { "startLine": 18 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-28849",
+          "level": "error",
+          "message": {
+            "text": "HIGH: axios ^1.6.2 may resolve to a version below 1.6.8, which is vulnerable to CVE-2024-28849 (Authorization header leaked to a third-party host on cross-origin redirect). This can expose bearer tokens or basic auth credentials. Upgrade axios to >=1.7.4."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/package.json" },
+                "region": { "startLine": 18 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-24762",
+          "level": "error",
+          "message": {
+            "text": "HIGH: fastapi==0.109.0 is affected by CVE-2024-24762, a ReDoS vulnerability in the bundled python-multipart form parser triggered by a crafted Content-Type header. A remote attacker can cause 100% CPU usage with a single malformed request. Upgrade to fastapi>=0.109.1 (pins python-multipart>=0.0.7)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/worker-service/requirements.txt" },
+                "region": { "startLine": 1 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ASVS-13.2.1",
+          "level": "warning",
+          "message": {
+            "text": "MEDIUM: POST /auth/login accepts email and password with no maximum length validation. Supplying a very long password (e.g., 1 MB) causes bcrypt to consume excessive CPU time (DoS). Add an explicit max-length check (e.g., password.length <= 72) before calling bcrypt.compare()."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/src/routes/auth.ts" },
+                "region": { "startLine": 24 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ASVS-7.1.1",
+          "level": "warning",
+          "message": {
+            "text": "MEDIUM: API key comparison in worker-service uses Python's != operator (non-constant-time). A remote attacker sending many requests can use response-time differences to recover the INTERNAL_API_KEY character-by-character. Replace with: import hmac; if not hmac.compare_digest(x_api_key or '', api_key)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/worker-service/src/main.py" },
+                "region": { "startLine": 45 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ASVS-8.3.1",
+          "level": "warning",
+          "message": {
+            "text": "MEDIUM: Job IDs are derived from Python's non-cryptographic hash() with only 16-bit output space (65,536 possible values per job type). IDs are predictable and enumerable. Use uuid.uuid4() or secrets.token_hex(8) instead to generate unpredictable, collision-resistant job identifiers."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/worker-service/src/main.py" },
+                "region": { "startLine": 49 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2024-3772",
+          "level": "warning",
+          "message": {
+            "text": "MEDIUM: pydantic==2.5.3 is affected by CVE-2024-3772, a ReDoS vulnerability in the built-in email validator (EmailStr). Upgrade to pydantic>=2.7.0 to receive the fix."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/worker-service/requirements.txt" },
+                "region": { "startLine": 3 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "DEP-ADVISORY-002",
+          "level": "note",
+          "message": {
+            "text": "LOW: bcryptjs@2.4.3 has not received a release since 2017 and is effectively unmaintained. No active CVE at this time, but unmaintained packages accumulate unpatched vulnerabilities over time. Consider migrating to 'bcrypt' (native bindings, actively maintained) or '@node-rs/bcrypt'."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/api-gateway/package.json" },
+                "region": { "startLine": 16 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "DEP-ADVISORY-004",
+          "level": "note",
+          "message": {
+            "text": "LOW: httpx==0.26.0 appears twice in requirements.txt (lines 4 and 9). Duplicate entries are ignored by pip but indicate poor manifest hygiene and can cause confusion during audits. Remove the duplicate."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "services/worker-service/requirements.txt" },
+                "region": { "startLine": 9 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SCAN-META-001",
+          "level": "note",
+          "message": {
+            "text": "LOW: Automated dependency scanners (npm audit, pip-audit/safety, gitleaks) were unavailable in this environment. Dependency CVE findings in this report are based on manual cross-referencing. Before release, run 'npm audit --audit-level=moderate' and 'pip-audit -r requirements.txt' in a CI environment with internet access to get a complete, up-to-date CVE list."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "reports/security.sarif.json" },
+                "region": { "startLine": 1 }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
